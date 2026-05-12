@@ -44,3 +44,9 @@ Thumbs.db
 .claude/settings.local.json
 
 test-output
+
+*/.env
+*/.env.local
+*/.env.development
+*/.env.test
+*/.env.production

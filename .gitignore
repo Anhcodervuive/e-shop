@@ -50,3 +50,7 @@ test-output
 */.env.development
 */.env.test
 */.env.production
+/generated/prisma
+
+.env
+/generated/prisma

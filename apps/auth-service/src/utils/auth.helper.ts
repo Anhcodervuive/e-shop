@@ -1,7 +1,7 @@
 import crypto from 'crypto';
-import redis from '../../../../packages/libs/redis';
-import { ValidationError } from '../../../../packages/error-handler';
-import { enqueueOtpEmail } from '../queues/mail.queue';
+import { ValidationError } from '@packages/error-handler';
+import redis from '@packages/libs/redis';
+import { enqueueOtpEmail } from '@auth/queues/mail.queue';
 
 export const generateRandomToken = (length: number = 32): string => {
   return crypto.randomBytes(length).toString('hex');

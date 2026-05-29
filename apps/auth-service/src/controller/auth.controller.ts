@@ -1,6 +1,6 @@
-import type { RegisterPayload } from '../schema';
-import { registerUser } from '../services/auth.service';
-import { tryCatch } from '../../../../packages/error-handler';
+import { tryCatch } from '@packages/error-handler';
+import type { RegisterPayload } from '@auth/schema';
+import { registerUser } from '@auth/services/auth.service';
 
 // Register a new user
 export const userRegistration = tryCatch(async (req, res) => {

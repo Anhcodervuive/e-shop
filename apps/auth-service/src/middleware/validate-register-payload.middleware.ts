@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
-import { ValidationError } from '../../../../packages/error-handler';
-import { registerPayloadSchema } from '../schema';
+import { ValidationError } from '@packages/error-handler';
+import { registerPayloadSchema } from '@auth/schema';
 
 export const validateRegisterPayload = (
   req: Request,

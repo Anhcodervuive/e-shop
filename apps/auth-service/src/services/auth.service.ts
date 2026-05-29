@@ -1,7 +1,7 @@
-import { BadRequestError } from '../../../../packages/error-handler';
-import prisma from '../../../../packages/libs/prisma';
-import type { RegisterPayload } from '../schema';
-import {  sendOtp } from '../utils/auth.helper';
+import { BadRequestError } from '@packages/error-handler';
+import prisma from '@packages/libs/prisma';
+import type { RegisterPayload } from '@auth/schema';
+import { sendOtp } from '@auth/utils/auth.helper';
 
 export const registerUser = async (payload: RegisterPayload) => {
     const existingUser = await prisma.user.findUnique({

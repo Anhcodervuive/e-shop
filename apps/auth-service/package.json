@@ -16,11 +16,16 @@
           "format": [
             "cjs"
           ],
-          "bundle": false,
+          "bundle": true,
           "main": "apps/auth-service/src/main.ts",
           "tsConfig": "apps/auth-service/tsconfig.app.json",
           "assets": [
-            "apps/auth-service/src/assets"
+            "apps/auth-service/src/assets",
+            {
+              "input": "apps/auth-service/src",
+              "glob": "swagger-output.json",
+              "output": "apps/auth-service/src"
+            }
           ],
           "esbuildOptions": {
             "sourcemap": true,
@@ -85,7 +90,11 @@
         ],
         "options": {
           "buildTarget": "@e-multi-vendor-shop/auth-service:build",
-          "runBuildTargetDependencies": false
+          "runBuildTargetDependencies": false,
+          "runtimeArgs": [
+            "-r",
+            "./apps/auth-service/register-aliases.js"
+          ]
         },
         "configurations": {
           "development": {

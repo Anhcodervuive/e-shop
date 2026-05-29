@@ -1,5 +1,13 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@auth/*": ["apps/auth-service/src/*"],
+      "@packages/error-handler": ["packages/error-handler/index.ts"],
+      "@packages/error-handler/*": ["packages/error-handler/*"],
+      "@packages/libs/prisma": ["packages/libs/prisma/index.ts"],
+      "@packages/libs/redis": ["packages/libs/redis/index.ts"]
+    },
     "composite": true,
     "declarationMap": true,
     "emitDeclarationOnly": true,

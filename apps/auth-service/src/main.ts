@@ -1,30 +1,13 @@
 import express from 'express';
 import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
-import fs from 'fs';
-import path from 'path';
 
 import { errorMiddleware } from '@packages/error-handler/error-middleware';
 import cookieParser from 'cookie-parser';
 import authRouter from '@auth/routes/auth.route';
 import { closeOtpEmailQueue } from '@auth/queues/mail.queue';
 import { startMailWorker, stopMailWorker } from '@auth/workers/mail.worker';
-
-const swaggerDocPathCandidates = [
-  path.join(__dirname, 'swagger-output.json'),
-  path.join(__dirname, 'apps/auth-service/src/swagger-output.json'),
-  path.join(__dirname, '../../../src/swagger-output.json'),
-];
-
-const swaggerDocPath = swaggerDocPathCandidates.find((candidate) =>
-  fs.existsSync(candidate)
-);
-
-if (!swaggerDocPath) {
-  throw new Error('Cannot find swagger-output.json');
-}
-
-const swaggerDoc = require(swaggerDocPath);
+const swaggerDoc = require('./swagger.js');
 
 const host = process.env.HOST ?? 'localhost';
 const port = process.env.PORT ? Number(process.env.PORT) : 3000;

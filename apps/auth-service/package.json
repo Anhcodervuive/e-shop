@@ -23,7 +23,7 @@
             "apps/auth-service/src/assets",
             {
               "input": "apps/auth-service/src",
-              "glob": "swagger-output.json",
+              "glob": "swagger.js",
               "output": "apps/auth-service/src"
             }
           ],

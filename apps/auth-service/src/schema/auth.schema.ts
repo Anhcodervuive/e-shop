@@ -16,4 +16,15 @@ export const registerPayloadSchema = z.object({
     .max(128, 'Password must be at most 128 characters'),
 });
 
+export const verifyUserPayloadSchema = z.object({
+  email: z
+    .string({ error: 'Email is required' })
+    .trim()
+    .email('Invalid email format'),
+  otp: z
+    .string({ error: 'OTP is required' })
+    .trim()
+    .length(6, 'OTP must be exactly 6 characters'),
+});
+
 export type RegisterPayload = z.infer<typeof registerPayloadSchema>;

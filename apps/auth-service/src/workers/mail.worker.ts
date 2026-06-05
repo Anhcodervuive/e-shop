@@ -1,12 +1,7 @@
 import { Worker } from 'bullmq';
 import { sendEmail } from '../utils/sendMail';
 import { OTP_EMAIL_JOB, OTP_EMAIL_QUEUE, type OtpEmailJobData } from '../queues/mail.queue';
-
-const redisUrl = process.env.REDIS_URL;
-
-if (!redisUrl) {
-  throw new Error('REDIS_URL is required to initialize BullMQ worker');
-}
+import { authEnv } from '@auth/utils/auth.env';
 
 let mailWorker: Worker<OtpEmailJobData> | null = null;
 
@@ -31,7 +26,7 @@ export const startMailWorker = () => {
     },
     {
       connection: {
-        url: redisUrl,
+        url: authEnv.REDIS_URL,
         maxRetriesPerRequest: null,
       },
       concurrency: 5,

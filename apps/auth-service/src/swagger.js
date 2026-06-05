@@ -52,6 +52,51 @@ const options = {
             },
           },
         },
+        LoginPayload: {
+          type: 'object',
+          required: ['email', 'password'],
+          properties: {
+            email: {
+              type: 'string',
+              format: 'email',
+              example: 'user@example.com',
+            },
+            password: {
+              type: 'string',
+              example: 'password123',
+            },
+          },
+        },
+        ForgotPasswordPayload: {
+          type: 'object',
+          required: ['email'],
+          properties: {
+            email: {
+              type: 'string',
+              format: 'email',
+              example: 'user@example.com',
+            },
+          },
+        },
+        ResetPasswordPayload: {
+          type: 'object',
+          required: ['email', 'otp', 'newPassword'],
+          properties: {
+            email: {
+              type: 'string',
+              format: 'email',
+              example: 'user@example.com',
+            },
+            otp: {
+              type: 'string',
+              example: '123456',
+            },
+            newPassword: {
+              type: 'string',
+              example: 'newPassword123',
+            },
+          },
+        },
       },
     },
   },

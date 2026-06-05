@@ -1,20 +1,18 @@
 import nodemailer from 'nodemailer';
-import dotenv from 'dotenv';
 import ejs from 'ejs';
 import path from 'path';
-
-dotenv.config();
+import { authEnv } from '../auth.env';
 
 const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT),
-    service: process.env.SMTP_SERVICE,
-    secure: true,
-    auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-    },
-})
+  host: authEnv.SMTP_HOST,
+  port: authEnv.SMTP_PORT,
+  service: authEnv.SMTP_SERVICE,
+  secure: true,
+  auth: {
+    user: authEnv.SMTP_USER,
+    pass: authEnv.SMTP_PASS,
+  },
+});
 
 const renderEmailTemplate = async (templateName: string, data: Record<string, any>): Promise<string> => {
     const templatePath = path.join(
@@ -30,17 +28,17 @@ const renderEmailTemplate = async (templateName: string, data: Record<string, an
 }
 
 export const sendEmail = async (to: string, subject: string, templateName: string, data: Record<string, any>) => {
-    try {
-        const html = await renderEmailTemplate(templateName, data);
-        await transporter.sendMail({
-            from: process.env.SMTP_USER,
-            to,
-            subject,
-            html
-        });
-        return true;
-    } catch (error) {
-        console.error('Error sending email:', error);
-        return false
-    }
-}
+  try {
+    const html = await renderEmailTemplate(templateName, data);
+    await transporter.sendMail({
+      from: authEnv.SMTP_USER,
+      to,
+      subject,
+      html,
+    });
+    return true;
+  } catch (error) {
+    console.error('Error sending email:', error);
+    return false;
+  }
+};

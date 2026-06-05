@@ -1,4 +1,5 @@
 import { Queue } from 'bullmq';
+import { authEnv } from '@auth/utils/auth.env';
 
 export const OTP_EMAIL_QUEUE = 'otp-email-queue';
 export const OTP_EMAIL_JOB = 'send-otp-email';
@@ -10,15 +11,9 @@ export type OtpEmailJobData = {
   template: string;
 };
 
-const redisUrl = process.env.REDIS_URL;
-
-if (!redisUrl) {
-  throw new Error('REDIS_URL is required to initialize BullMQ queue');
-}
-
 export const otpEmailQueue = new Queue<OtpEmailJobData>(OTP_EMAIL_QUEUE, {
   connection: {
-    url: redisUrl,
+    url: authEnv.REDIS_URL,
   },
   defaultJobOptions: {
     attempts: 3,

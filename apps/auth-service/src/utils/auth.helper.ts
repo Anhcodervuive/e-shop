@@ -48,6 +48,109 @@ export const checkOtpRestriction = async (email: string) => {
   }
 };
 
+export const checkPasswordResetRestriction = async (email: string) => {
+  const [resetLock, resetSpamLock, resetCooldown] = await Promise.all([
+    redis.get(AUTH_REDIS_KEYS.passwordResetLock(email)),
+    redis.get(AUTH_REDIS_KEYS.passwordResetSpamLock(email)),
+    redis.get(AUTH_REDIS_KEYS.passwordResetCooldown(email)),
+  ]);
+
+  if (resetLock) {
+    throw new ValidationError(AUTH_MESSAGES.otpLocked);
+  }
+
+  if (resetSpamLock) {
+    throw new ValidationError(AUTH_MESSAGES.otpTooManyRequests);
+  }
+
+  if (resetCooldown) {
+    throw new ValidationError(AUTH_MESSAGES.otpCooldown);
+  }
+};
+
+export const trackPasswordResetRequest = async (email: string) => {
+  const requestKey = AUTH_REDIS_KEYS.passwordResetRequestCount(email);
+  const requests = Number(await redis.get(requestKey) || '0');
+
+  if (requests >= AUTH_LIMITS.MAX_OTP_REQUESTS_PER_WINDOW) {
+    await redis.set(
+      AUTH_REDIS_KEYS.passwordResetSpamLock(email),
+      'locked',
+      'EX',
+      AUTH_CACHE_TTL.PASSWORD_RESET_REQUEST_WINDOW
+    );
+    throw new ValidationError(AUTH_MESSAGES.otpTooManyRequests);
+  }
+
+  await redis.set(
+    requestKey,
+    (requests + 1).toString(),
+    'EX',
+    AUTH_CACHE_TTL.PASSWORD_RESET_REQUEST_WINDOW
+  );
+};
+
+export const sendPasswordResetOtp = async (
+  name: string,
+  email: string,
+  template: string
+): Promise<void> => {
+  const otp = generateOtp();
+
+  await Promise.all([
+    redis.set(
+      AUTH_REDIS_KEYS.passwordResetOtp(email),
+      otp.toString(),
+      'EX',
+      AUTH_CACHE_TTL.PASSWORD_RESET_OTP
+    ),
+    redis.set(
+      AUTH_REDIS_KEYS.passwordResetCooldown(email),
+      'true',
+      'EX',
+      AUTH_CACHE_TTL.PASSWORD_RESET_COOLDOWN
+    ),
+    enqueueOtpEmail({ email, name, otp, template }),
+  ]);
+};
+
+export const verifyPasswordResetOtp = async (email: string, otp: string): Promise<boolean> => {
+  const storedOtp = await redis.get(AUTH_REDIS_KEYS.passwordResetOtp(email));
+  if (!storedOtp) {
+    throw new ValidationError(AUTH_MESSAGES.otpExpired);
+  }
+
+  const failedAttemptsKey = AUTH_REDIS_KEYS.passwordResetAttempts(email);
+  const failedAttempts = Number(await redis.get(failedAttemptsKey) || '0');
+
+  if (storedOtp !== otp) {
+    if (failedAttempts >= AUTH_LIMITS.MAX_OTP_ATTEMPTS) {
+      await redis.set(
+        AUTH_REDIS_KEYS.passwordResetLock(email),
+        'locked',
+        'EX',
+        AUTH_CACHE_TTL.PASSWORD_RESET_LOCK
+      );
+      await redis.del(AUTH_REDIS_KEYS.passwordResetOtp(email), failedAttemptsKey);
+      throw new ValidationError(AUTH_MESSAGES.otpLocked);
+    }
+
+    const remainingAttempts = AUTH_LIMITS.MAX_OTP_ATTEMPTS - failedAttempts - 1;
+    await redis.set(
+      failedAttemptsKey,
+      (failedAttempts + 1).toString(),
+      'EX',
+      AUTH_CACHE_TTL.PASSWORD_RESET_OTP
+    );
+    throw new ValidationError(
+      `Invalid OTP. You have ${remainingAttempts} attempts left before account lock.`
+    );
+  }
+
+  await redis.del(AUTH_REDIS_KEYS.passwordResetOtp(email), failedAttemptsKey);
+  return true;
+};
+
 export const trackOtpRequest = async (email: string) => {
   const otpRequestKey = AUTH_REDIS_KEYS.otpRequestCount(email);
   const otpRequests = Number(await redis.get(otpRequestKey) || '0');

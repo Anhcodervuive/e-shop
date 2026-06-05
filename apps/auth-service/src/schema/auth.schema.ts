@@ -27,4 +27,40 @@ export const verifyUserPayloadSchema = z.object({
     .length(6, 'OTP must be exactly 6 characters'),
 });
 
+export const loginPayloadSchema = z.object({
+  email: z
+    .string({ error: 'Email is required' })
+    .trim()
+    .email('Invalid email format'),
+  password: z
+    .string({ error: 'Password is required' })
+    .min(8, 'Password must be at least 8 characters')
+    .max(128, 'Password must be at most 128 characters'),
+});
+
+export const forgotPasswordPayloadSchema = z.object({
+  email: z
+    .string({ error: 'Email is required' })
+    .trim()
+    .email('Invalid email format'),
+});
+
+export const resetPasswordPayloadSchema = z.object({
+  email: z
+    .string({ error: 'Email is required' })
+    .trim()
+    .email('Invalid email format'),
+  otp: z
+    .string({ error: 'OTP is required' })
+    .trim()
+    .length(6, 'OTP must be exactly 6 characters'),
+  newPassword: z
+    .string({ error: 'New password is required' })
+    .min(8, 'Password must be at least 8 characters')
+    .max(128, 'Password must be at most 128 characters'),
+});
+
 export type RegisterPayload = z.infer<typeof registerPayloadSchema>;
+export type LoginPayload = z.infer<typeof loginPayloadSchema>;
+export type ForgotPasswordPayload = z.infer<typeof forgotPasswordPayloadSchema>;
+export type ResetPasswordPayload = z.infer<typeof resetPasswordPayloadSchema>;

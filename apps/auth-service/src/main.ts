@@ -7,10 +7,11 @@ import cookieParser from 'cookie-parser';
 import authRouter from '@auth/routes/auth.route';
 import { closeOtpEmailQueue } from '@auth/queues/mail.queue';
 import { startMailWorker, stopMailWorker } from '@auth/workers/mail.worker';
+import { authEnv } from '@auth/utils/auth.env';
 const swaggerDoc = require('./swagger.js');
 
-const host = process.env.HOST ?? 'localhost';
-const port = process.env.PORT ? Number(process.env.PORT) : 3000;
+const host = authEnv.HOST;
+const port = authEnv.PORT;
 
 const app = express();
 startMailWorker();

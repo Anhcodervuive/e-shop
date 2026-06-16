@@ -33,7 +33,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 app.get('/api-docs-json', (req, res) => {
   res.json(swaggerDoc);
 });
-app.use('/auth', authRouter);
+app.use('/api/auth', authRouter);
 app.use(errorMiddleware);
 
 const server = app.listen(port, () => {

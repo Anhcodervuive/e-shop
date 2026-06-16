@@ -25,7 +25,7 @@ const HeaderBottom = () => {
     }
   }, [])
   return (
-    <div className={`w-full h-[90px] py-auto transition-all duration-300 ${isSticky ? 'fixed top-0 left-0 z-[100] bg-white shadow-lg' : 'relative'}`}>
+      <div className={`w-full transition-all duration-300 ${isSticky ? 'fixed top-0 left-0 z-[100] bg-white shadow-lg h-[90px]' : 'relative h-[60px]'}`}>
         <div className={`w-[80%] relative m-auto flex items-center justify-between ${isSticky ? 'pt-3' : 'py-0'}`}>
             {/* All Navigation */}
             <div className={`w-[260px] ${isSticky && '-mb-2'} cursor-pointer flex items-center justify-between px-5 h-[50px] bg-[#3489ff]`}

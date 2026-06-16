@@ -30,6 +30,14 @@ export const verifyUser = tryCatch(async (req: Request, res: Response) => {
 export const login = tryCatch(async (req: Request, res: Response) => {
   const { message, user, accessToken, refreshToken } = await loginUser(req.body as LoginPayload);
 
+  res.cookie('accessToken', accessToken, {
+    httpOnly: true,
+    secure: false,
+    sameSite: 'lax',
+    path: '/',
+    maxAge: AUTH_CACHE_TTL.ACCESS_TOKEN * 1000,
+  });
+
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
     secure: false,

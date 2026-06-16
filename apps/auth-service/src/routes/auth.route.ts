@@ -14,62 +14,26 @@ import {
   loginPayloadSchema,
   resetPasswordPayloadSchema,
 } from '@auth/schema';
-import { ValidationError } from '@packages/error-handler';
-import type { NextFunction, Request, Response } from 'express';
+import { createValidatePayloadMiddleware } from '../middleware/validate-payload.middleware';
 
 const router = Router();
 
-const validateLoginPayload = (req: Request, res: Response, next: NextFunction) => {
-  const result = loginPayloadSchema.safeParse(req.body);
-
-  if (!result.success) {
-    const details = result.error.issues.map((issue) => ({
-      field: issue.path.join('.'),
-      message: issue.message,
-    }));
-
-    return next(new ValidationError('Invalid login payload', details));
-  }
-
-  req.body = result.data;
-  return next();
-};
-
-const validateForgotPasswordPayload = (req: Request, res: Response, next: NextFunction) => {
-  const result = forgotPasswordPayloadSchema.safeParse(req.body);
-
-  if (!result.success) {
-    const details = result.error.issues.map((issue) => ({
-      field: issue.path.join('.'),
-      message: issue.message,
-    }));
-
-    return next(new ValidationError('Invalid forgot password payload', details));
-  }
-
-  req.body = result.data;
-  return next();
-};
-
-const validateResetPasswordPayload = (req: Request, res: Response, next: NextFunction) => {
-  const result = resetPasswordPayloadSchema.safeParse(req.body);
-
-  if (!result.success) {
-    const details = result.error.issues.map((issue) => ({
-      field: issue.path.join('.'),
-      message: issue.message,
-    }));
-
-    return next(new ValidationError('Invalid reset password payload', details));
-  }
-
-  req.body = result.data;
-  return next();
-};
+const validateLoginPayload = createValidatePayloadMiddleware(
+  loginPayloadSchema,
+  'Invalid login payload'
+);
+const validateForgotPasswordPayload = createValidatePayloadMiddleware(
+  forgotPasswordPayloadSchema,
+  'Invalid forgot password payload'
+);
+const validateResetPasswordPayload = createValidatePayloadMiddleware(
+  resetPasswordPayloadSchema,
+  'Invalid reset password payload'
+);
 
 /**
  * @swagger
- * /auth/register:
+ * /api/auth/register:
  *   post:
  *     tags:
  *       - Auth
@@ -98,7 +62,7 @@ router.post('/register', validateRegisterPayload, userRegistration);
 
 /**
  * @swagger
- * /auth/verify:
+ * /api/auth/verify:
  *   post:
  *     tags:
  *       - Auth
@@ -129,7 +93,7 @@ router.post('/verify', validateVerifyOtpPayload, verifyUser);
 
 /**
  * @swagger
- * /auth/login:
+ * /api/auth/login:
  *   post:
  *     tags:
  *       - Auth
@@ -151,7 +115,7 @@ router.post('/login', validateLoginPayload, login);
 
 /**
  * @swagger
- * /auth/refresh-token:
+ * /api/auth/refresh-token:
  *   post:
  *     tags:
  *       - Auth
@@ -176,7 +140,7 @@ router.post('/refresh-token', refreshToken);
 
 /**
  * @swagger
- * /auth/forgot-password:
+ * /api/auth/forgot-password:
  *   post:
  *     tags:
  *       - Auth
@@ -198,7 +162,7 @@ router.post('/forgot-password', validateForgotPasswordPayload, forgotPasswordHan
 
 /**
  * @swagger
- * /auth/reset-password:
+ * /api/auth/reset-password:
  *   post:
  *     tags:
  *       - Auth

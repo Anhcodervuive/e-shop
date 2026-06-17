@@ -1,11 +1,18 @@
 import { BadRequestError } from '@packages/error-handler';
 import prisma from '@packages/libs/prisma';
-import type { ForgotPasswordPayload, LoginPayload, RegisterPayload, ResetPasswordPayload } from '@auth/schema';
+import type {
+  ForgotPasswordPayload,
+  LoginPayload,
+  RegisterPayload,
+  ResetPasswordPayload,
+  VerifyResetOtpPayload,
+} from '@auth/schema';
 import bcrypt from 'bcryptjs';
 import redis from '@packages/libs/redis';
 import {
   checkOtpRestriction,
   checkPasswordResetRestriction,
+  generateRandomToken,
   sendOtp,
   sendPasswordResetOtp,
   trackOtpRequest,
@@ -78,11 +85,34 @@ export const verifyUser = async (email: string, otp: string) => {
     omit: { password: true },
   });
 
+  const sessionId = generateSessionId();
+  const tokenPayload = {
+    userId: user.id,
+    email: user.email,
+  };
+  const accessToken = signAccessToken(tokenPayload);
+  const refreshToken = signRefreshToken({
+    ...tokenPayload,
+    sessionId,
+  });
+
+  await redis.set(
+    AUTH_REDIS_KEYS.refreshToken(user.id),
+    JSON.stringify({
+      sessionId,
+      refreshToken,
+    }),
+    'EX',
+    AUTH_CACHE_TTL.REFRESH_TOKEN
+  );
+
   await redis.del(AUTH_REDIS_KEYS.pendingUser(email));
 
   return {
     message: AUTH_MESSAGES.verifySuccess,
     user,
+    accessToken,
+    refreshToken,
   };
 };
 
@@ -212,7 +242,7 @@ export const forgotPassword = async (payload: ForgotPasswordPayload) => {
   };
 };
 
-export const resetPassword = async (payload: ResetPasswordPayload) => {
+export const verifyPasswordReset = async (payload: VerifyResetOtpPayload) => {
   const pendingOtp = await redis.get(AUTH_REDIS_KEYS.passwordResetOtp(payload.email));
   if (!pendingOtp) {
     throw new BadRequestError(AUTH_MESSAGES.passwordResetPendingMissing);
@@ -221,6 +251,26 @@ export const resetPassword = async (payload: ResetPasswordPayload) => {
   const isValidOtp = await verifyPasswordResetOtp(payload.email, payload.otp);
   if (!isValidOtp) {
     throw new BadRequestError(AUTH_MESSAGES.otpInvalid);
+  }
+
+  const resetToken = generateRandomToken(16);
+  await redis.set(
+    AUTH_REDIS_KEYS.passwordResetSession(resetToken),
+    payload.email,
+    'EX',
+    AUTH_CACHE_TTL.PASSWORD_RESET_OTP
+  );
+
+  return {
+    message: 'OTP verified successfully',
+    resetToken,
+  };
+};
+
+export const resetPassword = async (payload: ResetPasswordPayload) => {
+  const sessionEmail = await redis.get(AUTH_REDIS_KEYS.passwordResetSession(payload.resetToken));
+  if (!sessionEmail || sessionEmail !== payload.email) {
+    throw new BadRequestError(AUTH_MESSAGES.passwordResetSessionInvalid);
   }
 
   const passwordHash = await bcrypt.hash(payload.newPassword, AUTH_LIMITS.BCRYPT_SALT_ROUNDS);
@@ -236,7 +286,8 @@ export const resetPassword = async (payload: ResetPasswordPayload) => {
     AUTH_REDIS_KEYS.passwordResetRequestCount(payload.email),
     AUTH_REDIS_KEYS.passwordResetLock(payload.email),
     AUTH_REDIS_KEYS.passwordResetSpamLock(payload.email),
-    AUTH_REDIS_KEYS.passwordResetAttempts(payload.email)
+    AUTH_REDIS_KEYS.passwordResetAttempts(payload.email),
+    AUTH_REDIS_KEYS.passwordResetSession(payload.resetToken)
   );
 
   return {

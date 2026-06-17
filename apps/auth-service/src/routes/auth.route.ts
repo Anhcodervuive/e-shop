@@ -4,6 +4,7 @@ import {
   login,
   refreshToken,
   resetPasswordHandler,
+  verifyResetOtpHandler,
   userRegistration,
   verifyUser,
 } from '../controller/auth.controller';
@@ -13,6 +14,7 @@ import {
   forgotPasswordPayloadSchema,
   loginPayloadSchema,
   resetPasswordPayloadSchema,
+  verifyResetOtpPayloadSchema,
 } from '@auth/schema';
 import { createValidatePayloadMiddleware } from '../middleware/validate-payload.middleware';
 
@@ -29,6 +31,10 @@ const validateForgotPasswordPayload = createValidatePayloadMiddleware(
 const validateResetPasswordPayload = createValidatePayloadMiddleware(
   resetPasswordPayloadSchema,
   'Invalid reset password payload'
+);
+const validateVerifyResetOtpPayload = createValidatePayloadMiddleware(
+  verifyResetOtpPayloadSchema,
+  'Invalid reset OTP payload'
 );
 
 /**
@@ -162,12 +168,34 @@ router.post('/forgot-password', validateForgotPasswordPayload, forgotPasswordHan
 
 /**
  * @swagger
+ * /api/auth/verify-reset-otp:
+ *   post:
+ *     tags:
+ *       - Auth
+ *     summary: Verify password reset OTP
+ *     description: Validates the reset OTP and marks the email as eligible to set a new password.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/VerifyResetOtpPayload'
+ *     responses:
+ *       200:
+ *         description: OTP verified successfully and reset token issued
+ *       400:
+ *         description: Invalid payload or OTP
+ */
+router.post('/verify-reset-otp', validateVerifyResetOtpPayload, verifyResetOtpHandler);
+
+/**
+ * @swagger
  * /api/auth/reset-password:
  *   post:
  *     tags:
  *       - Auth
- *     summary: Reset password with OTP
- *     description: Validates the password reset OTP and updates the user's password.
+ *     summary: Reset password
+ *     description: Updates the user's password after OTP verification is completed using the reset token.
  *     requestBody:
  *       required: true
  *       content:
@@ -178,7 +206,7 @@ router.post('/forgot-password', validateForgotPasswordPayload, forgotPasswordHan
  *       200:
  *         description: Password reset successfully
  *       400:
- *         description: Invalid payload or OTP
+ *         description: Invalid payload or OTP verification missing
  */
 router.post('/reset-password', validateResetPasswordPayload, resetPasswordHandler);
 

@@ -36,6 +36,7 @@ export const AUTH_REDIS_KEYS = {
   passwordResetLock: (email: string) => `password-reset-lock:${email}`,
   passwordResetSpamLock: (email: string) => `password-reset-spam-lock:${email}`,
   passwordResetAttempts: (email: string) => `password-reset-attempts:${email}`,
+  passwordResetSession: (token: string) => `password-reset-session:${token}`,
 } as const;
 
 export const AUTH_MESSAGES = {
@@ -55,5 +56,6 @@ export const AUTH_MESSAGES = {
   logoutSuccess: 'Logged out successfully',
   passwordResetRequested: 'Password reset OTP has been sent to your email',
   passwordResetPendingMissing: 'No password reset request found for this email. Please request a new OTP.',
+  passwordResetSessionInvalid: 'Password reset session is invalid or expired. Please request a new OTP.',
   passwordResetSuccess: 'Password reset successfully',
 } as const;

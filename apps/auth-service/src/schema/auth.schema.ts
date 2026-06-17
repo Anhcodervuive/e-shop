@@ -50,10 +50,10 @@ export const resetPasswordPayloadSchema = z.object({
     .string({ error: 'Email is required' })
     .trim()
     .email('Invalid email format'),
-  otp: z
-    .string({ error: 'OTP is required' })
+  resetToken: z
+    .string({ error: 'Reset token is required' })
     .trim()
-    .length(6, 'OTP must be exactly 6 characters'),
+    .min(1, 'Reset token is required'),
   newPassword: z
     .string({ error: 'New password is required' })
     .min(8, 'Password must be at least 8 characters')
@@ -63,4 +63,16 @@ export const resetPasswordPayloadSchema = z.object({
 export type RegisterPayload = z.infer<typeof registerPayloadSchema>;
 export type LoginPayload = z.infer<typeof loginPayloadSchema>;
 export type ForgotPasswordPayload = z.infer<typeof forgotPasswordPayloadSchema>;
+export const verifyResetOtpPayloadSchema = z.object({
+  email: z
+    .string({ error: 'Email is required' })
+    .trim()
+    .email('Invalid email format'),
+  otp: z
+    .string({ error: 'OTP is required' })
+    .trim()
+    .length(6, 'OTP must be exactly 6 characters'),
+});
+
 export type ResetPasswordPayload = z.infer<typeof resetPasswordPayloadSchema>;
+export type VerifyResetOtpPayload = z.infer<typeof verifyResetOtpPayloadSchema>;

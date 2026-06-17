@@ -85,12 +85,11 @@
           }
         }
       },
-      "ResetPasswordPayload": {
+      "VerifyResetOtpPayload": {
         "type": "object",
         "required": [
           "email",
-          "otp",
-          "newPassword"
+          "otp"
         ],
         "properties": {
           "email": {
@@ -101,6 +100,25 @@
           "otp": {
             "type": "string",
             "example": "123456"
+          }
+        }
+      },
+      "ResetPasswordPayload": {
+        "type": "object",
+        "required": [
+          "email",
+          "resetToken",
+          "newPassword"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "user@example.com"
+          },
+          "resetToken": {
+            "type": "string",
+            "example": "a1b2c3d4e5f6"
           },
           "newPassword": {
             "type": "string",
@@ -278,13 +296,40 @@
         }
       }
     },
+    "/api/auth/verify-reset-otp": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Verify password reset OTP",
+        "description": "Validates the reset OTP and marks the email as eligible to set a new password.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyResetOtpPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OTP verified successfully and reset token issued"
+          },
+          "400": {
+            "description": "Invalid payload or OTP"
+          }
+        }
+      }
+    },
     "/api/auth/reset-password": {
       "post": {
         "tags": [
           "Auth"
         ],
-        "summary": "Reset password with OTP",
-        "description": "Validates the password reset OTP and updates the user's password.",
+        "summary": "Reset password",
+        "description": "Updates the user's password after OTP verification is completed using the reset token.",
         "requestBody": {
           "required": true,
           "content": {
@@ -300,7 +345,7 @@
             "description": "Password reset successfully"
           },
           "400": {
-            "description": "Invalid payload or OTP"
+            "description": "Invalid payload or OTP verification missing"
           }
         }
       }

@@ -143,7 +143,7 @@ const Page = () => {
                 />
                 Remember me
               </label>
-              <Link href={'/forgot-password'} className='text-sm text-blue-500 hover:underline ml-auto mt-2'>
+              <Link href={'/reset-password'} className='text-sm text-blue-500 hover:underline ml-auto mt-2'>
                 Forgot password?
               </Link>
             </div>

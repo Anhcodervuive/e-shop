@@ -17,6 +17,18 @@ type FormData = {
   confirmPassword: string;
 };
 
+type VerifyResponse = {
+  message: string;
+  user: {
+    id: string;
+    email: string;
+    name: string | null;
+    verifiedAt: string | null;
+  };
+  accessToken: string;
+  refreshToken: string;
+};
+
 type ApiErrorDetails = Array<{ field: string; message: string }>;
 
 const API_BASE = (process.env.NEXT_PUBLIC_SERVER_URI ?? '').replace(/\/$/, '');
@@ -125,7 +137,7 @@ const Page = () => {
 
   const verifyOtpMutation = useMutation({
     mutationFn: async () => {
-      const response = await axios.post(`${API_BASE}/api/auth/verify`, {
+      const response = await axios.post<VerifyResponse>(`${API_BASE}/api/auth/verify`, {
         email,
         otp: otp.join(''),
       });
@@ -134,7 +146,7 @@ const Page = () => {
     },
     onSuccess: () => {
       toast.success('Account verified successfully');
-      router.push('/login');
+      router.push('/');
     },
     onError: (error) => {
       const responseData = axios.isAxiosError(error)

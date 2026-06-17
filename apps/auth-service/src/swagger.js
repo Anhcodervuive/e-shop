@@ -78,9 +78,9 @@ const options = {
             },
           },
         },
-        ResetPasswordPayload: {
+        VerifyResetOtpPayload: {
           type: 'object',
-          required: ['email', 'otp', 'newPassword'],
+          required: ['email', 'otp'],
           properties: {
             email: {
               type: 'string',
@@ -90,6 +90,21 @@ const options = {
             otp: {
               type: 'string',
               example: '123456',
+            },
+          },
+        },
+        ResetPasswordPayload: {
+          type: 'object',
+          required: ['email', 'resetToken', 'newPassword'],
+          properties: {
+            email: {
+              type: 'string',
+              format: 'email',
+              example: 'user@example.com',
+            },
+            resetToken: {
+              type: 'string',
+              example: 'a1b2c3d4e5f6',
             },
             newPassword: {
               type: 'string',

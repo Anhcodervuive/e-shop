@@ -28,7 +28,6 @@ type ResetSession = {
   resetToken: string;
 };
 
-type ApiErrorDetails = Array<{ field: string; message: string }>;
 
 const API_BASE = (process.env.NEXT_PUBLIC_SERVER_URI ?? '').replace(/\/$/, '');
 

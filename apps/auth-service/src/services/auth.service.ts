@@ -9,6 +9,7 @@ import type {
 } from '@auth/schema';
 import bcrypt from 'bcryptjs';
 import redis from '@packages/libs/redis';
+import { logger } from '@packages/logger';
 import {
   checkOtpRestriction,
   checkPasswordResetRestriction,
@@ -25,6 +26,9 @@ import type { Prisma } from '@prisma/client';
 import { generateSessionId, signAccessToken, signRefreshToken, verifyRefreshToken } from '@auth/utils/auth.tokens';
 
 export const registerUser = async (payload: RegisterPayload) => {
+  logger.debug({
+    email: payload.email,
+  }, 'registerUser called');
   const existingUser = await prisma.user.findUnique({
     where: { email: payload.email },
   });
@@ -51,6 +55,9 @@ export const registerUser = async (payload: RegisterPayload) => {
   );
 
   await sendOtp(payload.name, payload.email, 'user-activation-mail');
+  logger.info({
+    email: payload.email,
+  }, 'Registration OTP queued');
 
   return {
     message: AUTH_MESSAGES.registerSuccess,
@@ -58,6 +65,7 @@ export const registerUser = async (payload: RegisterPayload) => {
 };
 
 export const verifyUser = async (email: string, otp: string) => {
+  logger.debug({ email }, 'verifyUser called');
   const pendingUserData = await redis.get(AUTH_REDIS_KEYS.pendingUser(email));
 
   if (!pendingUserData) {
@@ -107,6 +115,10 @@ export const verifyUser = async (email: string, otp: string) => {
   );
 
   await redis.del(AUTH_REDIS_KEYS.pendingUser(email));
+  logger.info({
+    email,
+    userId: user.id,
+  }, 'User created from pending registration');
 
   return {
     message: AUTH_MESSAGES.verifySuccess,
@@ -117,6 +129,7 @@ export const verifyUser = async (email: string, otp: string) => {
 };
 
 export const loginUser = async (payload: LoginPayload) => {
+  logger.debug({ email: payload.email }, 'loginUser called');
   const user = await prisma.user.findUnique({
     where: { email: payload.email },
   });
@@ -170,6 +183,7 @@ export const loginUser = async (payload: LoginPayload) => {
 };
 
 export const refreshAuthTokens = async (refreshToken: string) => {
+  logger.debug('refreshAuthTokens called');
   const decoded = verifyRefreshToken(refreshToken);
   const storedSession = await redis.get(AUTH_REDIS_KEYS.refreshToken(decoded.userId));
 
@@ -221,6 +235,7 @@ export const logoutUser = async (userId: string) => {
 };
 
 export const forgotPassword = async (payload: ForgotPasswordPayload) => {
+  logger.debug({ email: payload.email }, 'forgotPassword called');
   const user = await prisma.user.findUnique({
     where: { email: payload.email },
   });
@@ -236,6 +251,9 @@ export const forgotPassword = async (payload: ForgotPasswordPayload) => {
   await checkPasswordResetRestriction(payload.email);
   await trackPasswordResetRequest(payload.email);
   await sendPasswordResetOtp(user.name ?? 'there', payload.email, 'reset-password-mail');
+  logger.info({
+    email: payload.email,
+  }, 'Password reset OTP queued');
 
   return {
     message: AUTH_MESSAGES.passwordResetRequested,
@@ -243,6 +261,7 @@ export const forgotPassword = async (payload: ForgotPasswordPayload) => {
 };
 
 export const verifyPasswordReset = async (payload: VerifyResetOtpPayload) => {
+  logger.debug({ email: payload.email }, 'verifyPasswordReset called');
   const pendingOtp = await redis.get(AUTH_REDIS_KEYS.passwordResetOtp(payload.email));
   if (!pendingOtp) {
     throw new BadRequestError(AUTH_MESSAGES.passwordResetPendingMissing);
@@ -268,6 +287,7 @@ export const verifyPasswordReset = async (payload: VerifyResetOtpPayload) => {
 };
 
 export const resetPassword = async (payload: ResetPasswordPayload) => {
+  logger.debug({ email: payload.email }, 'resetPassword called');
   const sessionEmail = await redis.get(AUTH_REDIS_KEYS.passwordResetSession(payload.resetToken));
   if (!sessionEmail || sessionEmail !== payload.email) {
     throw new BadRequestError(AUTH_MESSAGES.passwordResetSessionInvalid);

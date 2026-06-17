@@ -3,6 +3,7 @@ import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 
 import { errorMiddleware } from '@packages/error-handler/error-middleware';
+import { logger } from '@packages/logger';
 import cookieParser from 'cookie-parser';
 import authRouter from '@auth/routes/auth.route';
 import { closeOtpEmailQueue } from '@auth/queues/mail.queue';
@@ -37,11 +38,14 @@ app.use('/api/auth', authRouter);
 app.use(errorMiddleware);
 
 const server = app.listen(port, () => {
-    console.log(`Listening at http://${host}:${port}/api`);
-    console.log(`Swagger UI available at http://${host}:${port}/api-docs`);
+    logger.info({
+      baseUrl: `http://${host}:${port}`,
+      apiUrl: `http://${host}:${port}/api`,
+      docsUrl: `http://${host}:${port}/api-docs`,
+    }, 'Auth service started');
 });
 server.on('error', (error) => {
-    console.error('server error: ', error);
+    logger.error({ error }, 'Auth service server error');
 });
 
 const shutdown = async () => {

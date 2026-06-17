@@ -6,7 +6,8 @@
       "@packages/error-handler": ["packages/error-handler/index.ts"],
       "@packages/error-handler/*": ["packages/error-handler/*"],
       "@packages/libs/prisma": ["packages/libs/prisma/index.ts"],
-      "@packages/libs/redis": ["packages/libs/redis/index.ts"]
+      "@packages/libs/redis": ["packages/libs/redis/index.ts"],
+      "@packages/logger": ["packages/logger/index.ts"]
     },
     "composite": true,
     "declarationMap": true,

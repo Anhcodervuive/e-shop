@@ -6,6 +6,7 @@ import { authEnv } from './auth.env';
 export type AuthTokenPayload = {
   userId: string;
   email: string;
+  role: string;
 };
 
 export const generateSessionId = () => crypto.randomUUID();

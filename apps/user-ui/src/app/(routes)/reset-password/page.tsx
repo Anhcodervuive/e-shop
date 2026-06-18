@@ -1,7 +1,7 @@
 'use client';
 
-import axios from 'axios';
 import { useMutation } from '@tanstack/react-query';
+import { apiClient, isAxiosError } from 'apps/user-ui/src/shared/lib/api';
 import { Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -29,10 +29,8 @@ type ResetSession = {
 };
 
 
-const API_BASE = (process.env.NEXT_PUBLIC_SERVER_URI ?? '').replace(/\/$/, '');
-
 const getApiErrorMessage = (error: unknown, fallback = 'Something went wrong') => {
-  if (!axios.isAxiosError(error)) {
+  if (!isAxiosError(error)) {
     return fallback;
   }
 
@@ -81,7 +79,7 @@ const Page = () => {
 
   const requestResetMutation = useMutation({
     mutationFn: async (data: RequestFormData) => {
-      const response = await axios.post(`${API_BASE}/api/auth/forgot-password`, data);
+      const response = await apiClient.post('/api/auth/forgot-password', data);
       return response.data;
     },
     onSuccess: (data) => {
@@ -95,7 +93,7 @@ const Page = () => {
 
   const verifyOtpMutation = useMutation({
     mutationFn: async () => {
-      const response = await axios.post<VerifyResetOtpResponse>(`${API_BASE}/api/auth/verify-reset-otp`, {
+      const response = await apiClient.post<VerifyResetOtpResponse>('/api/auth/verify-reset-otp', {
         email: resetEmail || email,
         otp: otp.join(''),
       });
@@ -118,7 +116,7 @@ const Page = () => {
         throw new Error('Reset session expired');
       }
 
-      const response = await axios.post(`${API_BASE}/api/auth/reset-password`, {
+      const response = await apiClient.post('/api/auth/reset-password', {
         email: resetSession.email,
         resetToken: resetSession.resetToken,
         newPassword: data.newPassword,

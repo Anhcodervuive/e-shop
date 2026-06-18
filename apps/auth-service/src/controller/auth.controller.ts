@@ -9,6 +9,7 @@ import type {
 import {
   forgotPassword,
   loginUser,
+  logoutUser,
   refreshAuthTokens,
   registerUser,
   resetPassword,
@@ -103,6 +104,14 @@ export const refreshToken = tryCatch(async (req: Request, res: Response) => {
 
   const { accessToken, refreshToken: rotatedRefreshToken } = await refreshAuthTokens(token);
 
+  res.cookie('accessToken', accessToken, {
+    httpOnly: true,
+    secure: false,
+    sameSite: 'lax',
+    path: '/',
+    maxAge: AUTH_CACHE_TTL.ACCESS_TOKEN * 1000,
+  });
+
   res.cookie('refreshToken', rotatedRefreshToken, {
     httpOnly: true,
     secure: false,
@@ -138,5 +147,31 @@ export const resetPasswordHandler = tryCatch(async (req: Request, res: Response)
   logger.info({
     email: req.body.email,
   }, 'Password reset completed');
+  return res.status(200).json({ message });
+});
+
+export const logout = tryCatch(async (req: Request, res: Response) => {
+  const userId = req.authUser?.userId;
+
+  if (!userId) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  const { message } = await logoutUser(userId);
+
+  res.clearCookie('accessToken', {
+    httpOnly: true,
+    secure: false,
+    sameSite: 'lax',
+    path: '/',
+  });
+
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    secure: false,
+    sameSite: 'lax',
+    path: '/',
+  });
+
   return res.status(200).json({ message });
 });

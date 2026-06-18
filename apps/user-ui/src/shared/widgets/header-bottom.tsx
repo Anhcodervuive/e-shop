@@ -1,8 +1,9 @@
 'use client'
-import { AlignLeft, ChevronDown, Heart, ShoppingCart, User } from 'lucide-react'
+import { AlignLeft, ChevronDown, Heart, ShoppingCart } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { navItems } from '../../configs/contants'
 import Link from 'next/link'
+import AccountEntry from '../components/account-entry'
 
 const HeaderBottom = () => {
   const [show, setShow] = useState(false)
@@ -57,15 +58,7 @@ const HeaderBottom = () => {
             <div>
                 {isSticky && (
                       <div className='flex items-center gap-8 '>
-                          <div className='flex items-center gap-2'>
-                              <Link href={'/login'} className='border-2 w-[50px] h-[50px] rounded-full flex items-center justify-center border-[#010f1c1a]'>
-                                  <User />
-                              </Link>
-                              <Link href={'/login'}>
-                                  <span className='block font-medium'>Hello,</span>
-                                  <span className='font-semibold'>Sign in</span>
-                              </Link>
-                          </div>
+                          <AccountEntry />
                           <div className='flex items-center gap-5'>
                               <Link href={'/wishList'} className='relative'>
                                   <Heart />

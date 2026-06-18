@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   forgotPasswordHandler,
   login,
+  logout,
   refreshToken,
   resetPasswordHandler,
   verifyResetOtpHandler,
@@ -17,6 +18,7 @@ import {
   verifyResetOtpPayloadSchema,
 } from '@auth/schema';
 import { createValidatePayloadMiddleware } from '../middleware/validate-payload.middleware';
+import { requireAuthMiddleware } from '../middleware/require-auth.middleware';
 
 const router = Router();
 
@@ -209,5 +211,13 @@ router.post('/verify-reset-otp', validateVerifyResetOtpPayload, verifyResetOtpHa
  *         description: Invalid payload or OTP verification missing
  */
 router.post('/reset-password', validateResetPasswordPayload, resetPasswordHandler);
+
+router.get('/me', requireAuthMiddleware, (req, res) => {
+  return res.status(200).json({
+    user: req.authUser,
+  });
+});
+
+router.post('/logout', requireAuthMiddleware, logout);
 
 export default router;

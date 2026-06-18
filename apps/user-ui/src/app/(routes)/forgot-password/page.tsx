@@ -1,7 +1,7 @@
 'use client';
 
-import axios from 'axios';
 import { useMutation } from '@tanstack/react-query';
+import { apiClient, isAxiosError } from 'apps/user-ui/src/shared/lib/api';
 import Link from 'next/link';
 import React from 'react';
 import { useForm } from 'react-hook-form';
@@ -15,10 +15,8 @@ type ForgotPasswordResponse = {
   message: string;
 };
 
-const API_BASE = (process.env.NEXT_PUBLIC_SERVER_URI ?? '').replace(/\/$/, '');
-
 const getApiErrorMessage = (error: unknown, fallback = 'Something went wrong') => {
-  if (!axios.isAxiosError(error)) {
+  if (!isAxiosError(error)) {
     return fallback;
   }
 
@@ -34,7 +32,7 @@ const Page = () => {
 
   const forgotPasswordMutation = useMutation({
     mutationFn: async (data: FormData) => {
-      const response = await axios.post<ForgotPasswordResponse>(`${API_BASE}/api/auth/forgot-password`, data);
+      const response = await apiClient.post<ForgotPasswordResponse>('/api/auth/forgot-password', data);
       return response.data;
     },
     onSuccess: (data) => {

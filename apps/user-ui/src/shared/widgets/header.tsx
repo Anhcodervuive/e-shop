@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import React from 'react'
-import { Heart, Search, ShoppingCart, User } from 'lucide-react'
+import { Heart, Search, ShoppingCart } from 'lucide-react'
 import HeaderBottom from './header-bottom'
+import AccountEntry from '../components/account-entry'
 
 const Header = () => {
   return (
@@ -20,15 +21,7 @@ const Header = () => {
               
             </div>
             <div className='flex items-center gap-8 '>
-              <div className='flex items-center gap-2'>
-                <Link href={'/login'} className='border-2 w-[50px] h-[50px] rounded-full flex items-center justify-center border-[#010f1c1a]'>
-                  <User />
-                </Link>
-                <Link href={'/login'}>
-                  <span className='block font-medium'>Hello,</span>
-                  <span className='font-semibold'>Sign in</span>
-                </Link>
-              </div>
+              <AccountEntry />
               <div className='flex items-center gap-5'>
                 <Link href={'/wishList'} className='relative'>
                   <Heart />

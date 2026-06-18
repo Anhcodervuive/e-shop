@@ -1,8 +1,8 @@
 'use client';
 
-import axios from 'axios';
 import { useMutation } from '@tanstack/react-query';
 import GoogleButton from 'apps/user-ui/src/shared/components/google-button';
+import { apiClient, isAxiosError } from 'apps/user-ui/src/shared/lib/api';
 import { Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -27,10 +27,8 @@ type LoginResponse = {
   refreshToken: string;
 };
 
-const API_BASE = (process.env.NEXT_PUBLIC_SERVER_URI ?? '').replace(/\/$/, '');
-
 const getApiErrorMessage = (error: unknown, fallback = 'Something went wrong') => {
-  if (!axios.isAxiosError(error)) {
+  if (!isAxiosError(error)) {
     return fallback;
   }
 
@@ -50,9 +48,7 @@ const Page = () => {
 
   const loginMutation = useMutation({
     mutationFn: async (data: FormData) => {
-      const response = await axios.post<LoginResponse>(`${API_BASE}/api/auth/login`, data, {
-        withCredentials: true,
-      });
+      const response = await apiClient.post<LoginResponse>('/api/auth/login', data);
 
       return response.data;
     },

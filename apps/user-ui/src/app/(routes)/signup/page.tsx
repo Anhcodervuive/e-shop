@@ -1,7 +1,7 @@
 'use client';
 
-import axios from 'axios';
 import { useMutation } from '@tanstack/react-query';
+import { apiClient, isAxiosError } from 'apps/user-ui/src/shared/lib/api';
 import { Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -31,10 +31,8 @@ type VerifyResponse = {
 
 type ApiErrorDetails = Array<{ field: string; message: string }>;
 
-const API_BASE = (process.env.NEXT_PUBLIC_SERVER_URI ?? '').replace(/\/$/, '');
-
 const getApiErrorMessage = (error: unknown, fallback = 'Something went wrong') => {
-  if (!axios.isAxiosError(error)) {
+  if (!isAxiosError(error)) {
     return fallback;
   }
 
@@ -111,7 +109,7 @@ const Page = () => {
 
   const signupMutation = useMutation({
     mutationFn: async (data: FormData) => {
-      const response = await axios.post(`${API_BASE}/api/auth/register`, data);
+      const response = await apiClient.post('/api/auth/register', data);
       return response.data;
     },
     onSuccess: () => {
@@ -122,7 +120,7 @@ const Page = () => {
       startResendTimer();
     },
     onError: (error) => {
-      const responseData = axios.isAxiosError(error)
+      const responseData = isAxiosError(error)
         ? (error.response?.data as { message?: string; details?: ApiErrorDetails } | undefined)
         : undefined;
 
@@ -137,7 +135,7 @@ const Page = () => {
 
   const verifyOtpMutation = useMutation({
     mutationFn: async () => {
-      const response = await axios.post<VerifyResponse>(`${API_BASE}/api/auth/verify`, {
+      const response = await apiClient.post<VerifyResponse>('/api/auth/verify', {
         email,
         otp: otp.join(''),
       });
@@ -149,7 +147,7 @@ const Page = () => {
       router.push('/');
     },
     onError: (error) => {
-      const responseData = axios.isAxiosError(error)
+      const responseData = isAxiosError(error)
         ? (error.response?.data as { message?: string; details?: ApiErrorDetails } | undefined)
         : undefined;
 
@@ -175,7 +173,7 @@ const Page = () => {
         confirmPassword: watch('confirmPassword'),
       };
 
-      const response = await axios.post(`${API_BASE}/api/auth/register`, payload);
+      const response = await apiClient.post('/api/auth/register', payload);
       return response.data;
     },
     onSuccess: () => {

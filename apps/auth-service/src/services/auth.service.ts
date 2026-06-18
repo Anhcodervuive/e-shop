@@ -88,15 +88,25 @@ export const verifyUser = async (email: string, otp: string) => {
       name: pendingUser.name,
       email: pendingUser.email,
       password: pendingUser.passwordHash,
+      role: 'user',
       verifiedAt: new Date(),
     },
-    omit: { password: true },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+      verifiedAt: true,
+      createdAt: true,
+      updatedAt: true,
+    },
   });
 
   const sessionId = generateSessionId();
   const tokenPayload = {
     userId: user.id,
     email: user.email,
+    role: user.role,
   };
   const accessToken = signAccessToken(tokenPayload);
   const refreshToken = signRefreshToken({
@@ -151,6 +161,7 @@ export const loginUser = async (payload: LoginPayload) => {
   const tokenPayload = {
     userId: user.id,
     email: user.email,
+    role: user.role,
   };
 
   const accessToken = signAccessToken(tokenPayload);
@@ -175,6 +186,7 @@ export const loginUser = async (payload: LoginPayload) => {
       id: user.id,
       email: user.email,
       name: user.name,
+      role: user.role,
       verifiedAt: user.verifiedAt,
     },
     accessToken,
@@ -203,11 +215,13 @@ export const refreshAuthTokens = async (refreshToken: string) => {
   const accessToken = signAccessToken({
     userId: decoded.userId,
     email: decoded.email,
+    role: decoded.role,
   });
 
   const rotatedRefreshToken = signRefreshToken({
     userId: decoded.userId,
     email: decoded.email,
+    role: decoded.role,
     sessionId: decoded.sessionId,
   });
 
